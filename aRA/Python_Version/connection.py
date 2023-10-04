@@ -1,13 +1,16 @@
 import os
 import time
-from pipython import GCS2Device
+from pipython import GCS2Device, pitools
 #from pipython import GCS2Controller
 
 def connection():
     controllerSerialNumberM = '0023550267'  # X - axis, top stage
-    #controllerSerialNumberF = '0021550261'  # Y - axis, limit 20mm, bottom stage
-    #controllerSerialNumberZ = '0021550262'  # Z - axis, 0 is up 52 (down)
+    controllerSerialNumberF = '0021550261'  # Y - axis, limit 20mm, bottom stage
+    controllerSerialNumberZ = '0021550262'  # Z - axis, 0 is up 52 (down)
 
+
+    STAGES = None
+    REFMODE = None
     axis = '1'
 
     # Load PI MATLAB Driver GCS2
@@ -22,23 +25,21 @@ def connection():
     #if not isinstance(Controller, GCS2Controller):
     #    Controller = GCS2Controller()
 
-    print('Cleared: Load GCS Libraries')
-
     # Connect to PI devices
-    PIdevice = GCS2Device(controllerSerialNumberM)
-    PIdevice.InterfaceSetupDlg()
-    
-    #PIdevice2 = GCS2Device(controllerSerialNumberF)
-    #PIdevice3 = GCS2Device(controllerSerialNumberZ)
-
+    PIdevice = GCS2Device()
+    PIdevice.ConnectUSB(controllerSerialNumberM)
+    pitools.startup(PIdevice, stages=STAGES, refmodes=REFMODE)
     print(PIdevice.qIDN())
-    #print(PIdevice2.qIDN())
-    #print(PIdevice3.qIDN())
 
-    # Initialize PI devices
-    #PIdevice.InitializeController()
-    #PIdevice2.InitializeController()
-    #PIdevice3.InitializeController()
+    PIdevice2 = GCS2Device()
+    PIdevice2.ConnectUSB(controllerSerialNumberF)
+    pitools.startup(PIdevice2, stages=STAGES, refmodes=REFMODE)
+    print(PIdevice2.qIDN())
+
+    PIdevice3 = GCS2Device()
+    PIdevice3.ConnectUSB(controllerSerialNumberZ)
+    pitools.startup(PIdevice3, stages=STAGES, refmodes=REFMODE)
+    print(PIdevice3.qIDN())
 
     # Startup stage - switch servo on for axis
     switchOn = 1
@@ -47,4 +48,4 @@ def connection():
     #PIdevice3.SVO(axis, switchOn)
 
     # Return connected devices and controller
-    return PIdevice#, PIdevice2, PIdevice3
+    return PIdevice, PIdevice2, PIdevice3
